@@ -5,14 +5,20 @@ import Foundation
 public func reduce(_ state: inout GameState, _ action: GameAction) {
     switch action {
     case .tap(let position):
-        guard state.status == .playing else { return }
+        guard state.status == .playing else {
+            return
+        }
+
         if state.placements.contains(position) {
             state.placements.remove(position)
-        } else {
+            state.moveCount += 1
+        } else if state.queensRemaining > 0 {
             state.placements.insert(position)
+            state.moveCount += 1
         }
-        state.moveCount += 1
+
         state.conflicts = Rules.conflicts(in: state.placements)
+
         if Rules.isSolved(placements: state.placements, size: state.size) {
             state.status = .won
         }

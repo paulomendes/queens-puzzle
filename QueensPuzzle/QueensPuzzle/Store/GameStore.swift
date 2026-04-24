@@ -33,7 +33,7 @@ final class GameStore {
         startTimer()
     }
 
-    isolated deinit {
+    deinit {
         timerTask?.cancel()
     }
 
@@ -44,8 +44,14 @@ final class GameStore {
     }
 
     // Convenience callers so the view layer stays ignorant of GameAction.
-    func tap(_ position: Position) { send(.tap(position)) }
-    func resetBoard() { send(.reset) }
+    func tap(_ position: Position) {
+        send(.tap(position))
+    }
+
+    func resetBoard() {
+        send(.reset)
+    }
+
     func retry() {
         // Full restart: resets the board AND the timer for the same board size.
         send(.newGame(state.size))

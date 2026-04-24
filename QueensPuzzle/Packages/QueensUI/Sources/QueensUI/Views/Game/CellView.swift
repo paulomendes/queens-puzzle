@@ -42,7 +42,7 @@ struct CellView: View {
             if isInConflict {
                 Rectangle().fill(conflict)
             } else if isAttacked {
-                Rectangle().fill(theme.boardHighlight.opacity(0.55))
+                Rectangle().fill(theme.boardHighlight.opacity(0.65))
             }
         }
     }
