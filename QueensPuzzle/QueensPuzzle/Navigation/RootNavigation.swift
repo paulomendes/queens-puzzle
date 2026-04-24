@@ -11,7 +11,7 @@ struct RootNavigation: View {
     private let sound: SoundService
 
     init(
-        scores: BestScoresRepository = InMemoryBestScoresRepository(),
+        scores: BestScoresRepository = UserDefaultsBestScoreRepository(userDefaults: .standard),
         clock: Clock = SystemClock(),
         haptics: HapticsService = SystemHapticsService(),
         sound: SoundService = NoOpSoundService()

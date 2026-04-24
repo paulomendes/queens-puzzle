@@ -83,6 +83,7 @@ final class GameStore {
         case .tap(let position):
             let placed = state.placements.contains(position)
             let removed = previous.placements.contains(position) && !placed
+
             if placed {
                 haptics.play(.placeQueen)
                 sound.play(.placeQueen)
@@ -90,9 +91,11 @@ final class GameStore {
                 haptics.play(.removeQueen)
                 sound.play(.removeQueen)
             }
+
             if !state.conflicts.isEmpty, state.conflicts != previous.conflicts {
                 haptics.play(.conflict)
             }
+
             if previous.status != .won, state.status == .won {
                 handleWin()
             }
