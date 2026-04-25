@@ -24,7 +24,7 @@ struct ScoreRow: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Board size \(size)")
-        .accessibilityValue("Best time \(bestTime), best moves \(bestMoves)")
+        .accessibilityLabel(Text(.homeRowA11YLabel(size)))
+        .accessibilityValue(Text(.homeRowA11YValue(bestTime, bestMoves)))
     }
 }

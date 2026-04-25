@@ -3,6 +3,8 @@ import QueensCore
 
 public struct GameView: View {
     @Environment(\.theme) private var theme
+    @Environment(\.horizontalSizeClass) private var hSizeClass
+    @Environment(\.verticalSizeClass) private var vSizeClass
 
     let state: GameState
     let isNewBestTime: Bool
@@ -33,33 +35,25 @@ public struct GameView: View {
         self.onLeave = onLeave
     }
 
+    private var isPad: Bool {
+        hSizeClass == .regular && vSizeClass == .regular
+    }
+
+    private var isCompactHeight: Bool {
+        vSizeClass == .compact
+    }
+
     public var body: some View {
         ZStack {
-            VStack(spacing: 24) {
-                GameHUDView(
-                    queensRemaining: state.queensRemaining,
-                    elapsedText: TimeFormatting.minutesSeconds(state.elapsed),
-                    moveCount: state.moveCount
-                )
-                BoardView(
-                    size: state.size,
-                    placements: state.placements,
-                    conflicts: state.conflicts,
-                    attackedSquares: Rules.attackedSquares(by: state.placements, size: state.size),
-                    isInteractive: state.status == .playing,
-                    onTap: onTap
-                )
-                .padding(.horizontal)
-                Spacer(minLength: 0)
-                HStack(spacing: 12) {
-                    Button("Abort", role: .destructive, action: onAbort)
-                        .buttonStyle(SecondaryBarButtonStyle())
-                    Button("Reset", action: onReset)
-                        .buttonStyle(PrimaryBarButtonStyle())
+            Group {
+                if isPad {
+                    iPadLayout
+                } else if isCompactHeight {
+                    iPhoneLandscapeLayout
+                } else {
+                    portraitLayout
                 }
-                .padding(.horizontal)
             }
-            .padding(.vertical, 16)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(theme.background.ignoresSafeArea())
             .disabled(state.status == .won)
@@ -78,6 +72,74 @@ public struct GameView: View {
         }
         .animation(.easeInOut(duration: 0.25), value: state.status)
     }
+
+    private var iPadLayout: some View {
+        GeometryReader { geo in
+            portraitLayout
+                .frame(maxWidth: min(geo.size.width, geo.size.height))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    private var portraitLayout: some View {
+        VStack(spacing: 24) {
+            hud(axis: .horizontal)
+            board
+                .padding(.horizontal)
+            Spacer(minLength: 0)
+            actionButtons
+                .padding(.horizontal)
+        }
+        .padding(.vertical, 16)
+    }
+
+    private var iPhoneLandscapeLayout: some View {
+        HStack(alignment: .center, spacing: 16) {
+            board
+                .frame(maxHeight: .infinity)
+
+            VStack(spacing: 12) {
+                hud(axis: .vertical)
+                Spacer(minLength: 0)
+                actionButtons
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .padding(16)
+    }
+
+    private var board: some View {
+        BoardView(
+            size: state.size,
+            placements: state.placements,
+            conflicts: state.conflicts,
+            attackedSquares: state.attackedSquares,
+            isInteractive: state.status == .playing,
+            onTap: onTap
+        )
+    }
+
+    private func hud(axis: Axis) -> some View {
+        GameHUDView(
+            queensRemaining: state.queensRemaining,
+            elapsedText: TimeFormatting.minutesSeconds(state.elapsed),
+            moveCount: state.moveCount,
+            axis: axis
+        )
+    }
+
+    private var actionButtons: some View {
+        HStack(spacing: 12) {
+            Button(role: .destructive, action: onAbort) {
+                Text(.gameButtonAbort)
+            }
+            .buttonStyle(SecondaryBarButtonStyle())
+            Button(action: onReset) {
+                Text(.gameButtonReset)
+            }
+            .buttonStyle(PrimaryBarButtonStyle())
+        }
+    }
 }
 
 #Preview("Fresh 8x8") {
@@ -92,6 +154,7 @@ public struct GameView: View {
     ]
     var state = GameState(size: BoardSize(8)!, placements: placements, moveCount: 5, elapsed: 37)
     state.conflicts = Rules.conflicts(in: placements)
+    state.attackedSquares = Rules.attackedSquares(by: placements, size: state.size)
     return GameView(state: state)
 }
 

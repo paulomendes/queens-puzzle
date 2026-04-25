@@ -18,13 +18,13 @@ struct WinOverlayView: View {
                 .accessibilityHidden(true)
 
             VStack(spacing: 16) {
-                Text("You won!")
+                Text(.gameWinTitle)
                     .font(.largeTitle.bold())
                     .foregroundStyle(theme.textPrimary)
 
                 HStack(spacing: 24) {
-                    stat(label: "Time", value: TimeFormatting.minutesSeconds(elapsed))
-                    stat(label: "Moves", value: "\(moveCount)")
+                    stat(label: .gameWinStatTime, value: TimeFormatting.minutesSeconds(elapsed))
+                    stat(label: .gameWinStatMoves, value: "\(moveCount)")
                 }
 
                 if isNewBestTime || isNewBestMoves {
@@ -35,10 +35,14 @@ struct WinOverlayView: View {
                 }
 
                 HStack(spacing: 12) {
-                    Button("Leave", role: .destructive, action: onLeave)
-                        .buttonStyle(SecondaryBarButtonStyle())
-                    Button("Retry", action: onRetry)
-                        .buttonStyle(PrimaryBarButtonStyle())
+                    Button(role: .destructive, action: onLeave) {
+                        Text(.gameWinButtonLeave)
+                    }
+                    .buttonStyle(SecondaryBarButtonStyle())
+                    Button(action: onRetry) {
+                        Text(.gameWinButtonRetry)
+                    }
+                    .buttonStyle(PrimaryBarButtonStyle())
                 }
                 .padding(.top, 8)
             }
@@ -51,14 +55,14 @@ struct WinOverlayView: View {
         .accessibilityAddTraits(.isModal)
     }
 
-    private var newRecordMessage: String {
-        if isNewBestTime && isNewBestMoves { return "New best time and move count!" }
-        if isNewBestTime { return "New best time!" }
-        return "New fewest moves!"
+    private var newRecordMessage: LocalizedStringResource {
+        if isNewBestTime && isNewBestMoves { return .gameWinRecordBoth }
+        if isNewBestTime { return .gameWinRecordTime }
+        return .gameWinRecordMoves
     }
 
     @ViewBuilder
-    private func stat(label: String, value: String) -> some View {
+    private func stat(label: LocalizedStringResource, value: String) -> some View {
         VStack(spacing: 2) {
             Text(label)
                 .font(.caption.weight(.semibold))

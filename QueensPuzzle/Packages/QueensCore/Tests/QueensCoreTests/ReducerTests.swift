@@ -45,6 +45,17 @@ struct ReducerTests {
         ])
     }
 
+    @Test("tap recomputes the attackedSquares cache")
+    func tapRecomputesAttackedSquares() {
+        var state = GameState(size: BoardSize(4)!)
+        reduce(&state, .tap(Position(row: 1, col: 1)))
+
+        #expect(state.attackedSquares == Rules.attackedSquares(
+            by: [Position(row: 1, col: 1)],
+            size: BoardSize(4)!
+        ))
+    }
+
     @Test("tap that completes a valid solution transitions to .won")
     func tapCompletingSolutionWins() {
         let solution: [Position] = [
@@ -101,12 +112,14 @@ struct ReducerTests {
 
     // MARK: .reset
 
-    @Test("reset clears placements, conflicts, and move count — preserves size AND elapsed")
+    @Test("reset clears placements, conflicts, attackedSquares, and move count — preserves size AND elapsed")
     func resetClearsBoardButKeepsTimer() {
+        let placements: Set<Position> = [Position(row: 0, col: 0), Position(row: 1, col: 1)]
         var state = GameState(
             size: BoardSize(8)!,
-            placements: [Position(row: 0, col: 0), Position(row: 1, col: 1)],
-            conflicts: [Position(row: 0, col: 0), Position(row: 1, col: 1)],
+            placements: placements,
+            conflicts: placements,
+            attackedSquares: Rules.attackedSquares(by: placements, size: BoardSize(8)!),
             moveCount: 9,
             elapsed: 17.5,
             status: .playing
@@ -116,6 +129,7 @@ struct ReducerTests {
         #expect(state.size == BoardSize(8)!)
         #expect(state.placements.isEmpty)
         #expect(state.conflicts.isEmpty)
+        #expect(state.attackedSquares.isEmpty)
         #expect(state.moveCount == 0)
         #expect(state.elapsed == 17.5)
         #expect(state.status == .playing)

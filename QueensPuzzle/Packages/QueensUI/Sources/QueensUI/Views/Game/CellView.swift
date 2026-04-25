@@ -26,30 +26,30 @@ struct CellView: View {
         .buttonStyle(.plain)
         .disabled(!isInteractive)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(accessibilityLabel)
-        .accessibilityHint(accessibilityHint)
+        .accessibilityLabel(Text(accessibilityLabel))
+        .accessibilityHint(Text(accessibilityHint))
         .accessibilityAddTraits(.isButton)
     }
 
     private var background: some View {
         let base = isDarkSquare ? theme.boardDark : theme.boardLight
         let conflict = isDarkSquare ? theme.conflictOnDark : theme.conflictOnLight
-        // Attack highlight is drawn as a translucent overlay so the underlying
-        // light/dark square still reads through — otherwise the whole attacked
-        // region flattens into a single colour and the checkerboard disappears.
         return ZStack {
             Rectangle().fill(base)
             if isInConflict {
                 Rectangle().fill(conflict)
             } else if isAttacked {
-                Rectangle().fill(theme.boardHighlight.opacity(0.65))
+                Circle()
+                    .fill(theme.background)
+                    .opacity(0.5)
+                    .padding(8)
+
             }
         }
     }
 
     private var queen: some View {
         Image("white-queen", bundle: .module)
-            .renderingMode(.template)
             .resizable()
             .scaledToFit()
             .padding(6)
@@ -57,22 +57,23 @@ struct CellView: View {
             .symbolEffect(.pulse, options: .repeating, isActive: isInConflict)
     }
 
-    private var accessibilityLabel: String {
+    private var accessibilityLabel: LocalizedStringResource {
         let row = position.row + 1
         let col = position.col + 1
         if hasQueen {
             if isInConflict {
-                return "Row \(row), column \(col), queen placed, in conflict"
+                return .gameCellA11YQueenPlacedConflict(row, col)
             }
-            return "Row \(row), column \(col), queen placed"
+            return .gameCellA11YQueenPlaced(row, col)
         }
         if isAttacked {
-            return "Row \(row), column \(col), under attack"
+            return .gameCellA11YUnderAttack(row, col)
         }
-        return "Row \(row), column \(col), empty"
+        return .gameCellA11YEmpty(row, col)
     }
 
-    private var accessibilityHint: String {
-        hasQueen ? "Double tap to remove queen" : "Double tap to place queen"
+    private var accessibilityHint: LocalizedStringResource {
+        hasQueen ? .gameCellA11YHintRemove : .gameCellA11YHintPlace
     }
 }
+

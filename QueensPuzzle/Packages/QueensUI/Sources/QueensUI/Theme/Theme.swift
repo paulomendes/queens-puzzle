@@ -16,6 +16,8 @@ public struct Theme: Sendable {
     public let conflictOnLight: Color
     public let conflictOnDark: Color
     public let winBadge: Color
+    public let attackOnDark: Color
+    public let attackOnLight: Color
 
     public static let chessDotCom = Theme(
         background: Color("surface-root", bundle: .module),
@@ -32,7 +34,9 @@ public struct Theme: Sendable {
         boardHighlight: Color("board-highlight", bundle: .module),
         conflictOnLight: Color("board-conflict-dark", bundle: .module),
         conflictOnDark: Color("board-conflict", bundle: .module),
-        winBadge: Color("state-success", bundle: .module)
+        winBadge: Color("state-success", bundle: .module),
+        attackOnDark: Color("attack-dark", bundle: .module),
+        attackOnLight: Color("attack-light", bundle: .module)
     )
 }
 

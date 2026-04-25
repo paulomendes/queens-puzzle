@@ -1,14 +1,18 @@
 import SwiftUI
-import QueensCore
 
 struct GameHUDView: View {
     @Environment(\.theme) private var theme
     let queensRemaining: Int
     let elapsedText: String
     let moveCount: Int
+    var axis: Axis = .horizontal
 
     var body: some View {
-        HStack(spacing: 12) {
+        let layout: AnyLayout = axis == .horizontal
+            ? AnyLayout(HStackLayout(spacing: 12))
+            : AnyLayout(VStackLayout(spacing: 12))
+
+        layout {
             pill {
                 Image("white-queen", bundle: .module)
                     .renderingMode(.template)
@@ -22,7 +26,7 @@ struct GameHUDView: View {
                     .foregroundStyle(theme.textPrimary)
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Queens remaining: \(queensRemaining)")
+            .accessibilityLabel(Text(.gameHudA11YQueensRemaining(queensRemaining)))
 
             pill {
                 Image(systemName: "clock")
@@ -33,7 +37,7 @@ struct GameHUDView: View {
                     .foregroundStyle(theme.textPrimary)
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Elapsed time: \(elapsedText)")
+            .accessibilityLabel(Text(.gameHudA11YElapsedTime(elapsedText)))
 
             pill {
                 Image(systemName: "hand.tap")
@@ -44,7 +48,7 @@ struct GameHUDView: View {
                     .foregroundStyle(theme.textPrimary)
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Moves: \(moveCount)")
+            .accessibilityLabel(Text(.gameHudA11YMoves(moveCount)))
         }
         .padding(.horizontal)
     }

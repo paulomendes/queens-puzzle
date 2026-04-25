@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "QueensUI",
+    defaultLocalization: "en",
     platforms: [
         .iOS(.v18)
     ],
@@ -18,7 +19,8 @@ let package = Package(
             dependencies: ["QueensCore"],
             resources: [
                 .process("Resources/Colors.xcassets"),
-                .process("Resources/Images.xcassets")
+                .process("Resources/Images.xcassets"),
+                .process("Resources/Localizable.xcstrings")
             ]
         ),
         .testTarget(

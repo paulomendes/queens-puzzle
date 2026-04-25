@@ -18,6 +18,7 @@ public func reduce(_ state: inout GameState, _ action: GameAction) {
         }
 
         state.conflicts = Rules.conflicts(in: state.placements)
+        state.attackedSquares = Rules.attackedSquares(by: state.placements, size: state.size)
 
         if Rules.isSolved(placements: state.placements, size: state.size) {
             state.status = .won
@@ -32,6 +33,7 @@ public func reduce(_ state: inout GameState, _ action: GameAction) {
         // stops on win or abort. Full restart (including timer) is `.newGame`.
         state.placements = []
         state.conflicts = []
+        state.attackedSquares = []
         state.moveCount = 0
         state.status = .playing
 

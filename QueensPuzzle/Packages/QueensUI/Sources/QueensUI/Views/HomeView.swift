@@ -3,6 +3,9 @@ import QueensCore
 
 public struct HomeView: View {
     @Environment(\.theme) private var theme
+    @Environment(\.presentationMode) private var presentationMode
+    @Environment(\.horizontalSizeClass) private var hSizeClass
+    @Environment(\.verticalSizeClass) private var vSizeClass
 
     @State private var selectedSize: Int = 8
 
@@ -20,33 +23,81 @@ public struct HomeView: View {
         self.onStartGame = onStartGame
     }
 
+    private var isPad: Bool {
+        hSizeClass == .regular && vSizeClass == .regular
+    }
+
+    private var isCompactHeight: Bool {
+        vSizeClass == .compact
+    }
+
     public var body: some View {
+        Group {
+            if isPad {
+                iPadBody
+            } else if isCompactHeight {
+                iPhoneLandscapeBody
+            } else {
+                portraitBody
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(theme.background.ignoresSafeArea())
+    }
+
+    private var iPadBody: some View {
         VStack(spacing: 16) {
-            Text("Queens Puzzle")
-                .font(.largeTitle.bold())
-                .foregroundStyle(theme.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
-
+            title
             scoresTable
-
             Spacer(minLength: 0)
-
             bottomBar
         }
         .padding(.vertical, 16)
+        .containerRelativeFrame(.horizontal) { length, _ in length / 3 }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(theme.background.ignoresSafeArea())
+    }
+
+    private var portraitBody: some View {
+        VStack(spacing: 16) {
+            title
+            scoresTable
+            Spacer(minLength: 0)
+            bottomBar
+        }
+        .padding(.vertical, 16)
+    }
+
+    private var iPhoneLandscapeBody: some View {
+        HStack(alignment: .top, spacing: 16) {
+            scoresTable
+                .frame(maxWidth: .infinity)
+
+            VStack(alignment: .leading, spacing: 16) {
+                title
+                Spacer(minLength: 0)
+                bottomBar
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .padding(.vertical, 16)
+    }
+
+    private var title: some View {
+        Text(.homeTitle)
+            .font(.largeTitle.bold())
+            .foregroundStyle(theme.textPrimary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal)
     }
 
     private var scoresTable: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                Text("Board")
+                Text(.homeScoresColumnBoard)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Text("Best Time")
+                Text(.homeScoresColumnBestTime)
                     .frame(maxWidth: .infinity, alignment: .center)
-                Text("Best Moves")
+                Text(.homeScoresColumnBestMoves)
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
             .font(.subheadline.weight(.semibold))
@@ -79,20 +130,24 @@ public struct HomeView: View {
 
     private var bottomBar: some View {
         HStack(spacing: 12) {
-            Button("Start New Puzzle", action: startGame)
-                .buttonStyle(PrimaryBarButtonStyle())
+            Button(action: startGame) {
+                Text(.homeButtonStartNewPuzzle)
+            }
+            .buttonStyle(PrimaryBarButtonStyle())
 
-            Picker("Size", selection: $selectedSize) {
+            Picker(selection: $selectedSize) {
                 ForEach(BoardSize.range, id: \.self) { n in
                     Text("\(n)").tag(n)
                 }
+            } label: {
+                Text(.homeSizeLabel)
             }
             .pickerStyle(.menu)
             .tint(theme.textPrimary)
             .padding(.vertical, 10)
             .padding(.horizontal, 14)
             .background(theme.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .accessibilityLabel("Board size")
+            .accessibilityLabel(Text(.homeSizeA11YLabel))
         }
         .padding(.horizontal)
     }

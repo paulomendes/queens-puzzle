@@ -53,7 +53,7 @@ public struct BoardView: View {
         .animation(.easeInOut(duration: 0.18), value: placements)
         .animation(.easeInOut(duration: 0.18), value: conflicts)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Board, \(size.n) by \(size.n)")
+        .accessibilityLabel(Text(.gameBoardA11YLabel(size.n, size.n)))
     }
 
     private func isDark(row: Int, col: Int) -> Bool {
