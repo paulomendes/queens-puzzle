@@ -14,7 +14,7 @@ struct RootNavigation: View {
         scores: BestScoresRepository = UserDefaultsBestScoreRepository(userDefaults: .standard),
         clock: Clock = SystemClock(),
         haptics: HapticsService = SystemHapticsService(),
-        sound: SoundService = NoOpSoundService()
+        sound: SoundService = SystemSoundService()
     ) {
         self.scores = scores
         self.clock = clock

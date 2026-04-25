@@ -11,7 +11,8 @@ let package = Package(
         .library(name: "QueensUI", targets: ["QueensUI"])
     ],
     dependencies: [
-        .package(path: "../QueensCore")
+        .package(path: "../QueensCore"),
+        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.0")
     ],
     targets: [
         .target(
@@ -25,7 +26,10 @@ let package = Package(
         ),
         .testTarget(
             name: "QueensUITests",
-            dependencies: ["QueensUI"]
+            dependencies: [
+                "QueensUI",
+                .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
+            ]
         )
     ]
 )

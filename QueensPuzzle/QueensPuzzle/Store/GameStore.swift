@@ -87,6 +87,9 @@ final class GameStore {
             if placed {
                 haptics.play(.placeQueen)
                 sound.play(.placeQueen)
+                if !state.conflicts.isEmpty {
+                    sound.play(.conflict)
+                }
             } else if removed {
                 haptics.play(.removeQueen)
                 sound.play(.removeQueen)
