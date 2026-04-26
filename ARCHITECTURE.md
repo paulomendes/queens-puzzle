@@ -54,9 +54,8 @@ Explicit non-goals for QueensUI:
 - `@main` app struct.
 - **Root navigation**: `NavigationStack` + `NavigationPath` + `navigationDestination(for: BoardSize.self)` that constructs `GameView`. Views from `QueensUI` are composed here; they don't wrap themselves.
 - **`GameStore`** (the `@Observable` class that wraps the reducer and owns side-effecting services). Lives here because it references services; the reducer it wraps still lives in `QueensCore` and stays pure.
-- Concrete service implementations: `SystemClock`, `SystemHapticsService`, `AVSoundService`, `UserDefaultsBestScoresRepository`, and `InMemoryBestScoresRepository` (useful as a default and for previews/tests).
+- Concrete service implementations: `SystemClock`, `SystemHapticsService`, `SystemSoundService`, `UserDefaultsBestScoresRepository`, and `InMemoryBestScoresRepository` (useful as a default and for previews/tests).
 - Dependency injection wiring (composition root).
-- `ConfettiView` (the celebration effect — isolated to the app, see "Celebration" section). May read from `QueensUI.Theme` for its particle colors.
 - **`AccentColor`** asset in the app's `Assets.xcassets`, mirroring `green/primary` (`#81B64C`). iOS reads the system accent from the main bundle; packages can't satisfy this, so this is the one color we duplicate outside `QueensUI`.
 - App icon and launch screen.
 
@@ -72,9 +71,7 @@ QueensPuzzle/QueensPuzzle/
 │   └── UserDefaultsBestScoresRepository.swift  # added later
 ├── Store/
 │   └── GameStore.swift           # added when reducer is wired
-├── Services/                     # SystemClock, SystemHaptics, AVSound — added later
-└── Celebration/
-    └── ConfettiView.swift        # added later
+└── Services/                     # SystemClock, SystemHapticsService, SystemSoundService
 ```
 
 ## The Reducer Pattern (short explainer)
@@ -210,7 +207,7 @@ public protocol HapticsService {
 }
 
 public enum SoundEffect {
-    case placeQueen, removeQueen, win
+    case placeQueen, removeQueen, conflict, win
 }
 public protocol SoundService {
     func play(_ effect: SoundEffect)
@@ -226,7 +223,7 @@ public protocol BestScoresRepository {
 **Implementations (in App target):**
 - `SystemClock` — wraps `Task.sleep` or `ContinuousClock`.
 - `SystemHapticsService` — `UIImpactFeedbackGenerator` and `UINotificationFeedbackGenerator` (SwiftUI-wrapped). Consider Core Haptics for the win event if budget allows.
-- `AVSoundService` — `AVAudioPlayer` with preloaded buffers. Sound assets live in the App target's bundle.
+- `SystemSoundService` — AudioToolbox's `AudioServicesPlaySystemSound`. Each `SoundEffect` maps to a `.wav` in the app bundle (`add`, `remove`, `conflict`, `won`); IDs are registered once at init via `AudioServicesCreateSystemSoundID` and disposed on deinit. Picked over `AVAudioPlayer` because the cues are short, fire-and-forget effects — no player lifecycle to manage, no need to size buffers. The trade-off is that system sounds follow the **ringer** volume rather than media volume, which is actually desirable here (move-piece SFX should not blast at music volume).
 - `UserDefaultsBestScoresRepository` — see Persistence section.
 
 Test targets provide fakes (`FakeClock`, `SpyHaptics`, etc.) that capture events for assertions.
@@ -249,33 +246,32 @@ Two screens. No separate "win screen" — the win state is an overlay on the gam
 - Bottom bar: Abort (secondary) and Reset (primary). Abort fires `onAbort: () -> Void`; Reset fires `onReset: () -> Void`. The App wires Abort to pop the nav stack and Reset to dispatch to the store.
 - Taps on cells fire `onTap: (Position) -> Void` (wired when the reducer/store lands; App sends `.tap` to the store).
 - Conflicting queens highlighted (red tint + subtle `SymbolEffect` pulse on the queen glyph).
-- **Win overlay**: when `state.status == .won`, a dimming overlay appears with the final time, move count, a "New record!" badge if applicable, and a **Back to Home** button. The confetti effect plays behind/around this overlay. The overlay is part of `GameView`'s layout tree; confetti is injected as a sibling (see Celebration).
+- **Win overlay**: when `state.status == .won`, a dimming overlay appears with the final time, move count, a "New best…" badge if applicable, and two buttons — **Retry** (restart the same board size) and **Leave** (return to home). Wired through `onRetry` / `onLeave` callbacks; the App target dispatches retry to the store and pops the nav stack on leave. The celebration is the `SoundEffect.win` cue plus the win haptic, fired by the store on the `playing → won` transition — there is no overlaid animation (see Celebration).
 
 ### Navigation
 
 `NavigationStack` rooted at the App target's `RootNavigation` view, with `HomeView` as the root content and `GameView` registered via `navigationDestination(for: BoardSize.self)`. The views themselves never touch `NavigationStack`, `NavigationPath`, or `navigationDestination`.
 
-## Celebration — Decoupled Confetti
+## Celebration
 
-**Lives in the App target, not in `QueensUI`.** Implementation: SwiftUI `Canvas` + `TimelineView` drawing confetti particles. No SpriteKit, no UIKit.
+**No confetti, no particle effects.** The win celebration is two cues fired by `GameStore` on the `playing → won` transition: `SoundEffect.win` (a short jingle in `won.wav`, played through `SystemSoundService`) and `HapticEvent.win`. Combined with the win overlay, that's the entire celebration.
 
-`GameView` does not know what its celebration looks like. It accepts a view-builder parameter:
+This is a deliberate scope cut from the original plan, which had a `ConfettiView` (SwiftUI `Canvas` + `TimelineView`) injected into `GameView` via a view-builder generic:
 
 ```swift
-// In QueensUI:
+// Original plan — not built:
 public struct GameView<Celebration: View>: View {
-    let size: BoardSize
-    let celebration: (Bool) -> Celebration  // receives isWon
-    // ...
-}
-
-// In App target:
-GameView(size: size) { isWon in
-    ConfettiView(isActive: isWon)
+    let celebration: (Bool) -> Celebration
 }
 ```
 
-Tests and previews can pass `{ _ in EmptyView() }`. Swapping the celebration for something fancier later is a one-line change in the composition root.
+The reasoning for dropping it:
+
+- A short SFX + haptic on a one-off win event lands as well as confetti and is significantly less code to get right (Reduce Motion handling, particle perf, layering with the overlay, etc.).
+- Removing the generic also removes a real ergonomic cost — `GameView<EmptyView>` is awkward in previews, snapshot tests, and call sites that don't care about celebration.
+- The seam still exists: a future visual celebration can re-introduce the view-builder parameter without touching the reducer or the store. The win cue stays as the audio/haptic layer regardless.
+
+The shipped `GameView` therefore takes plain callbacks (`onTap`, `onReset`, `onAbort`, `onRetry`, `onLeave`) and no celebration generic.
 
 ## Persistence
 
@@ -334,7 +330,16 @@ Designed-in seams. When the interview follow-up extends the app, reach for one o
 - No analytics.
 - No localization beyond English. Strings should still go through `String(localized:)` so adding locales later is cheap.
 
+## Accessibility
+
+Accessibility is a first-class requirement even though it's not in the original brief.
+
+- **Algebraic chess notation for cells**, not "Row X, column Y." Each `Position` exposes `.algebraic(boardSize:)` (defined in `QueensCore`), which produces strings like `a1`, `e4`, `h8`. `CellView` uses this string for both `accessibilityLabel` and `accessibilityIdentifier`. Two reasons:
+  - It matches how chess players actually talk about a board, so VoiceOver users get a precise, familiar coordinate system instead of a generic grid description.
+  - Reusing the same string as the accessibility identifier means UI tests can drive the board with `app.buttons["b4"].tap()` and stay in sync with VoiceOver labels — if one breaks, both do.
+- **HUD elements** have their own labels (queens remaining, elapsed time, move count) defined in localized strings.
+- **Dynamic Type** on the HUD is partial — at the largest accessibility sizes some elements clip depending on orientation. A production version would either reflow or scope which elements scale.
+
 ## Open Notes
 
-- Accessibility is a first-class requirement even though it's not in the original brief: VoiceOver labels on cells (`"Row 3, column 5, empty"` / `"...queen placed, in conflict"`), Dynamic Type on the HUD, and respecting Reduce Motion for confetti (skip animation, show a static "You won!" state instead).
 - If Core Haptics turns out to be worth it for the win event, keep `HapticsService` as-is but branch inside `SystemHapticsService` based on the event. Don't leak the distinction into `QueensCore`.
