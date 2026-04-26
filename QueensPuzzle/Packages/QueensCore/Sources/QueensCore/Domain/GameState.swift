@@ -28,4 +28,5 @@ public struct GameState: Equatable, Sendable {
     }
 
     public var queensRemaining: Int { size.n - placements.count }
+    public var hasConflicts: Bool { !conflicts.isEmpty }
 }

@@ -7,37 +7,49 @@
 
 import XCTest
 
+@MainActor
 final class QueensPuzzleUITests: XCTestCase {
+    var app: XCUIApplication!
 
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
+        app = XCUIApplication()
+        app.launchArguments += [LaunchArguments.inMemoryScores]
+        app.launch()
     }
 
     override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        app = nil
     }
 
-    @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
-        let app = XCUIApplication()
-        app.launch()
+    func testSolve4x4() throws {
+        startNewPuzzle(size: 4)
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
+        // One of the two 4-queens solutions.
+        tapCell("b4")
+        tapCell("d3")
+        tapCell("a2")
+        tapCell("c1")
+
+        let winTitle = app.staticTexts["You won!"]
+        XCTAssertTrue(winTitle.waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Time"].exists)
+        XCTAssertTrue(app.staticTexts["Moves"].exists)
+        // The in-memory repo starts empty, so a clean solve sets both bests.
+        XCTAssertTrue(app.staticTexts["New best time and move count!"].exists)
+        XCTAssertTrue(app.buttons["Retry"].exists)
+
+        app.buttons["Leave"].tap()
+        XCTAssertTrue(app.buttons["Start New Puzzle"].waitForExistence(timeout: 2))
     }
 
-    @MainActor
-    func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
-        measure(metrics: [XCTApplicationLaunchMetric()]) {
-            XCUIApplication().launch()
-        }
+    private func startNewPuzzle(size: Int) {
+        app.buttons["Size, Board size"].firstMatch.tap()
+        app.buttons["\(size)"].firstMatch.tap()
+        app.buttons["Start New Puzzle"].tap()
+    }
+
+    private func tapCell(_ algebraic: String) {
+        app.buttons[algebraic].tap()
     }
 }

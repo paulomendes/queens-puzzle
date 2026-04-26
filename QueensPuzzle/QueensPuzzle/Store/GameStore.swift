@@ -79,31 +79,27 @@ final class GameStore {
     }
 
     private func applyEffects(previous: GameState, action: GameAction) {
-        switch action {
-        case .tap(let position):
-            let placed = state.placements.contains(position)
-            let removed = previous.placements.contains(position) && !placed
+        guard case .tap = action else { return }
 
-            if placed {
-                haptics.play(.placeQueen)
-                sound.play(.placeQueen)
-                if !state.conflicts.isEmpty {
-                    sound.play(.conflict)
-                }
-            } else if removed {
-                haptics.play(.removeQueen)
-                sound.play(.removeQueen)
-            }
+        let transition = GameTransition(from: previous, to: state)
 
-            if !state.conflicts.isEmpty, state.conflicts != previous.conflicts {
-                haptics.play(.conflict)
+        if transition.queenPlaced != nil {
+            haptics.play(.placeQueen)
+            sound.play(.placeQueen)
+            if state.hasConflicts {
+                sound.play(.conflict)
             }
+        } else if transition.queenRemoved != nil {
+            haptics.play(.removeQueen)
+            sound.play(.removeQueen)
+        }
 
-            if previous.status != .won, state.status == .won {
-                handleWin()
-            }
-        case .tick, .reset, .newGame:
-            break
+        if transition.conflictsChanged {
+            haptics.play(.conflict)
+        }
+
+        if transition.didWin {
+            handleWin()
         }
     }
 
