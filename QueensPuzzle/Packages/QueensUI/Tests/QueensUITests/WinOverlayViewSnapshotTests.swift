@@ -3,7 +3,8 @@ import SnapshotTesting
 @testable import QueensUI
 
 @MainActor
-@Suite struct WinOverlayViewSnapshotTests {
+@Suite(.snapshots)
+struct WinOverlayViewSnapshotTests {
     private let frame = (width: 393.0, height: 600.0)
 
     @Test func noBests() {

@@ -4,7 +4,8 @@ import QueensCore
 @testable import QueensUI
 
 @MainActor
-@Suite struct GameViewSnapshotTests {
+@Suite(.snapshots)
+struct GameViewSnapshotTests {
     @Test func fresh8x8_iPhonePortrait() {
         let view = GameView(state: GameStateFixtures.fresh(n: 8))
         assertSnapshot(of: view, as: .image(layout: .device(config: SnapshotDevices.iPhone17ProPortrait)))

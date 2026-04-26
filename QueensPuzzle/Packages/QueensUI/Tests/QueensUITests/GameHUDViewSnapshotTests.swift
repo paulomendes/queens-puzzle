@@ -3,7 +3,8 @@ import SnapshotTesting
 @testable import QueensUI
 
 @MainActor
-@Suite struct GameHUDViewSnapshotTests {
+@Suite(.snapshots)
+struct GameHUDViewSnapshotTests {
     @Test func horizontal_freshGame() {
         let view = GameHUDView(
             queensRemaining: 8,

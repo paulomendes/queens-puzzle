@@ -4,7 +4,8 @@ import SnapshotTesting
 @testable import QueensUI
 
 @MainActor
-@Suite struct ButtonStylesSnapshotTests {
+@Suite(.snapshots)
+struct ButtonStylesSnapshotTests {
     private let frame = (width: 280.0, height: 80.0)
 
     @Test func primary() {

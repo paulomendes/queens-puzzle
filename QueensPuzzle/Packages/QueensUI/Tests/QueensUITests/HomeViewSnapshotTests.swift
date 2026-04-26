@@ -5,7 +5,8 @@ import QueensCore
 @testable import QueensUI
 
 @MainActor
-@Suite struct HomeViewSnapshotTests {
+@Suite(.snapshots)
+struct HomeViewSnapshotTests {
     @Test func emptyScores_iPhonePortrait() {
         let view = HomeView()
         assertSnapshot(of: view, as: .image(layout: .device(config: SnapshotDevices.iPhone17ProPortrait)))

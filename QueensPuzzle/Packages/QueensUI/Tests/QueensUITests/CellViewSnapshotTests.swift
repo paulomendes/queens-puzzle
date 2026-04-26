@@ -4,7 +4,8 @@ import QueensCore
 @testable import QueensUI
 
 @MainActor
-@Suite struct CellViewSnapshotTests {
+@Suite(.snapshots)
+struct CellViewSnapshotTests {
     private static let size: Double = 80
     private let position = Position(row: 0, col: 0)
 

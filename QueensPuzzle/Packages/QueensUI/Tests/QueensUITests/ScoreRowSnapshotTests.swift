@@ -3,7 +3,8 @@ import SnapshotTesting
 @testable import QueensUI
 
 @MainActor
-@Suite struct ScoreRowSnapshotTests {
+@Suite(.snapshots)
+struct ScoreRowSnapshotTests {
     @Test func empty() {
         let view = ScoreRow(size: 8, bestTime: "-", bestMoves: "-")
         assertSnapshot(of: view, as: .image(layout: .fixed(width: 360, height: 60)))

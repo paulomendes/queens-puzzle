@@ -1,10 +1,11 @@
-import Testing
-import SnapshotTesting
 import QueensCore
 @testable import QueensUI
+import SnapshotTesting
+import Testing
 
 @MainActor
-@Suite struct BoardViewSnapshotTests {
+@Suite(.snapshots)
+struct BoardViewSnapshotTests {
     private static let frame = (width: 360.0, height: 360.0)
 
     @Test func empty4x4() {
