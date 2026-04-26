@@ -35,6 +35,7 @@ public struct BoardView: View {
                         let position = Position(row: row, col: col)
                         CellView(
                             position: position,
+                            boardSize: size,
                             isDarkSquare: isDark(row: row, col: col),
                             hasQueen: placements.contains(position),
                             isInConflict: conflicts.contains(position),

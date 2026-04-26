@@ -5,6 +5,7 @@ struct CellView: View {
     @Environment(\.theme) private var theme
 
     let position: Position
+    let boardSize: BoardSize
     let isDarkSquare: Bool
     let hasQueen: Bool
     let isInConflict: Bool
@@ -28,6 +29,7 @@ struct CellView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(accessibilityLabel))
         .accessibilityHint(Text(accessibilityHint))
+        .accessibilityIdentifier(notation)
         .accessibilityAddTraits(.isButton)
     }
 
@@ -57,19 +59,21 @@ struct CellView: View {
             .symbolEffect(.pulse, options: .repeating, isActive: isInConflict)
     }
 
+    private var notation: String {
+        position.algebraic(boardSize: boardSize)
+    }
+
     private var accessibilityLabel: LocalizedStringResource {
-        let row = position.row + 1
-        let col = position.col + 1
         if hasQueen {
             if isInConflict {
-                return .gameCellA11YQueenPlacedConflict(row, col)
+                return .gameCellA11YQueenPlacedConflict(notation)
             }
-            return .gameCellA11YQueenPlaced(row, col)
+            return .gameCellA11YQueenPlaced(notation)
         }
         if isAttacked {
-            return .gameCellA11YUnderAttack(row, col)
+            return .gameCellA11YUnderAttack(notation)
         }
-        return .gameCellA11YEmpty(row, col)
+        return .gameCellA11YEmpty(notation)
     }
 
     private var accessibilityHint: LocalizedStringResource {

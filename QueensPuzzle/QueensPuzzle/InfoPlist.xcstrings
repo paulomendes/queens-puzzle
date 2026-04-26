@@ -1,6 +1,5 @@
 {
   "sourceLanguage" : "en",
-  "version" : "1.0",
   "strings" : {
     "CFBundleDisplayName" : {
       "comment" : "Bundle display name shown on the home screen / app launcher.",
@@ -21,7 +20,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Desafio das Rainhas"
+            "value" : "Desafio das Damas"
           }
         }
       }
@@ -45,10 +44,11 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rainhas"
+            "value" : "Damas"
           }
         }
       }
     }
-  }
+  },
+  "version" : "1.0"
 }

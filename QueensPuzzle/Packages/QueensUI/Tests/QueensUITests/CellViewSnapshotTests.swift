@@ -54,6 +54,7 @@ struct CellViewSnapshotTests {
     ) -> CellView {
         CellView(
             position: position,
+            boardSize: BoardSize(8)!,
             isDarkSquare: dark,
             hasQueen: hasQueen,
             isInConflict: isInConflict,

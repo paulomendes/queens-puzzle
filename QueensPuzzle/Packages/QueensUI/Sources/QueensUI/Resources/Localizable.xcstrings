@@ -78,25 +78,25 @@
       }
     },
     "game.cell.a11y.empty" : {
-      "comment" : "Accessibility label for an empty board cell. Args: row, column.",
+      "comment" : "Accessibility label for an empty board cell. Args: chess notation (e.g. a5).",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Row %1$lld, column %2$lld, empty"
+            "value" : "%@"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fila %1$lld, columna %2$lld, vacía"
+            "value" : "%@"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Linha %1$lld, coluna %2$lld, vazia"
+            "value" : "%@"
           }
         }
       }
@@ -120,7 +120,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toque duas vezes para posicionar a rainha"
+            "value" : "Toque duas vezes para posicionar a dama"
           }
         }
       }
@@ -144,79 +144,79 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toque duas vezes para remover a rainha"
+            "value" : "Toque duas vezes para remover a dama"
           }
         }
       }
     },
     "game.cell.a11y.queenPlaced" : {
-      "comment" : "Accessibility label for a cell with a queen. Args: row, column.",
+      "comment" : "Accessibility label for a cell with a queen. Args: chess notation (e.g. a5).",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Row %1$lld, column %2$lld, queen placed"
+            "value" : "Queen %@"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fila %1$lld, columna %2$lld, reina colocada"
+            "value" : "Reina %@"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Linha %1$lld, coluna %2$lld, rainha posicionada"
+            "value" : "Dama %@"
           }
         }
       }
     },
     "game.cell.a11y.queenPlacedConflict" : {
-      "comment" : "Accessibility label for a queen-occupied cell that is currently in conflict. Args: row, column.",
+      "comment" : "Accessibility label for a queen-occupied cell that is currently in conflict. Args: chess notation (e.g. a5).",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Row %1$lld, column %2$lld, queen placed, in conflict"
+            "value" : "Queen %@, in conflict"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fila %1$lld, columna %2$lld, reina colocada, en conflicto"
+            "value" : "Reina %@, en conflicto"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Linha %1$lld, coluna %2$lld, rainha posicionada, em conflito"
+            "value" : "Dama %@, em conflito"
           }
         }
       }
     },
     "game.cell.a11y.underAttack" : {
-      "comment" : "Accessibility label for an empty cell that is attacked by an existing queen. Args: row, column.",
+      "comment" : "Accessibility label for an empty cell that is attacked by an existing queen. Args: chess notation (e.g. a5).",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Row %1$lld, column %2$lld, under attack"
+            "value" : "%@, under attack"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fila %1$lld, columna %2$lld, bajo ataque"
+            "value" : "%@, bajo ataque"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Linha %1$lld, coluna %2$lld, sob ataque"
+            "value" : "%@, sob ataque"
           }
         }
       }
@@ -288,7 +288,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rainhas restantes: %lld"
+            "value" : "Damas restantes: %lld"
           }
         }
       }
@@ -696,7 +696,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Desafio das Rainhas"
+            "value" : "Desafio das Damas"
           }
         }
       }

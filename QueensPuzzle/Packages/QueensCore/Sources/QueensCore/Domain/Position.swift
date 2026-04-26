@@ -6,4 +6,11 @@ public struct Position: Equatable, Hashable, Codable, Sendable {
         self.row = row
         self.col = col
     }
+
+    public func algebraic(boardSize: BoardSize) -> String {
+        let aScalar = ("a" as Unicode.Scalar).value
+        let file = Character(Unicode.Scalar(aScalar + UInt32(col))!)
+        let rank = boardSize.n - row
+        return "\(file)\(rank)"
+    }
 }
