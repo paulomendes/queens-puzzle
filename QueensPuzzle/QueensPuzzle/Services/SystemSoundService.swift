@@ -1,27 +1,34 @@
-import AVFoundation
+import AudioToolbox
+import Foundation
 import QueensCore
 
 final class SystemSoundService: SoundService, @unchecked Sendable {
-    private let players: [SoundEffect: AVAudioPlayer]
+    private let soundIDs: [SoundEffect: SystemSoundID]
 
     init() {
-        // Pre-load SFX
-        var loaded: [SoundEffect: AVAudioPlayer] = [:]
+        var loaded: [SoundEffect: SystemSoundID] = [:]
         for (effect, resource) in Self.resources {
-            guard let url = Bundle.main.url(forResource: resource, withExtension: "wav"),
-                  let player = try? AVAudioPlayer(contentsOf: url) else {
+            guard let url = Bundle.main.url(forResource: resource, withExtension: "wav") else {
                 continue
             }
-            player.prepareToPlay()
-            loaded[effect] = player
+            var id: SystemSoundID = 0
+            guard AudioServicesCreateSystemSoundID(url as CFURL, &id) == kAudioServicesNoError else {
+                continue
+            }
+            loaded[effect] = id
         }
-        self.players = loaded
+        self.soundIDs = loaded
+    }
+
+    deinit {
+        for id in soundIDs.values {
+            AudioServicesDisposeSystemSoundID(id)
+        }
     }
 
     func play(_ effect: SoundEffect) {
-        guard let player = players[effect] else { return }
-        player.currentTime = 0
-        player.play()
+        guard let id = soundIDs[effect] else { return }
+        AudioServicesPlaySystemSound(id)
     }
 
     private static let resources: [(SoundEffect, String)] = [
