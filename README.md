@@ -101,3 +101,39 @@ A few deliberate trade-offs given the scope of the exercise:
 - **Conflict detection** is a straightforward O(k²) pair check. With k ≤ 10 queens there are at most 100 comparisons, so a smarter row/column/diagonal index wasn't worth the extra code.
 - **Board size is capped at 10.** Beyond that, tap targets on iPhone become uncomfortably small. Raising the ceiling is a one-line change in `BoardSize.maximum`, but it would also need touch-ergonomic work (zoom, draggable cursor) to be usable.
 - **Dynamic Type support is partial.** At the largest accessibility sizes, depending on orientation, some HUD elements can clip. A production version would either reflow the HUD or scope which elements scale.
+
+---
+
+## Testing strategy
+
+Each layer of the architecture gets a different kind of test. The split mirrors the dependency direction (Core → UI → App), so each layer is exercised with the cheapest tool that can give a meaningful signal.
+
+### QueensCore — pure unit tests (Swift Testing)
+
+`QueensCore` has no UIKit/SwiftUI dependency, so the whole suite is plain `swift test`-runnable Swift Testing code. No simulator, no host app, fastest feedback loop in the project.
+
+- **`RulesTests`** — the rules engine is the part that's easiest to get subtly wrong, so it gets the most coverage. Known-valid N-queens solutions for `n = 4, 5, 6, 8` act as positive fixtures, and crafted boards exercise each conflict axis (same row, same column, `\` diagonal, `/` diagonal). Negative `isSolved` cases cover empty boards, too-few queens, too-many queens, and right-count-but-with-a-conflict. `attackedSquares` is checked for a single queen's row/column/both diagonals and that queen squares themselves are never marked attacked.
+- **`ReducerTests`** — one test per `GameAction` case (`.tap`, `.tick`, `.reset`, `.newGame`) plus no-op behaviour on a won board, plus assertions that the derived caches (`conflicts`, `attackedSquares`) are recomputed on every mutation. This is the contract the rest of the app depends on, so it's exhaustive on purpose.
+- **`GameTransitionTests`** — `GameTransition` is the value the store uses to decide which side effects to fire (place sound vs. remove sound vs. win). Each derived field (`queenPlaced`, `queenRemoved`, `conflictsChanged`, `didWin`) has its own positive and negative cases, including the easy-to-miss ones like *conflicts cleared is not a "change"* and *won → won is not a "win"*.
+- **`BoardSizeTests` / `PositionTests`** — small value-type tests. `BoardSize` covers the `4...10` bounds. `Position.algebraic(boardSize:)` is checked at every corner across multiple board sizes — this matters because the same string is used for VoiceOver labels and as accessibility identifiers in UI tests.
+
+### QueensUI — snapshot tests
+
+`QueensUI` views are pure functions of state — they take values and emit closures. That makes them ideal for snapshot testing: deterministic output, no async settling, no service stubs needed. The suite uses [pointfreeco/swift-snapshot-testing](https://github.com/pointfreeco/swift-snapshot-testing).
+
+- **One snapshot suite per exported view**: `BoardView`, `CellView`, `GameHUDView`, `GameView`, `HomeView`, `ScoreRow`, `WinOverlayView`, plus `ButtonStyles`. Each view is rendered against the states it can actually be in (fresh, mid-game with conflicts, won, won-with-new-best, etc.) so a regression in any branch shows up as a pixel diff.
+- **State fixtures are centralised** in `GameStateFixtures.swift`, so tests stay declarative — `GameView(state: .midGameWithConflicts())` rather than rebuilding boards inline.
+- **Device matrix is fixed and explicit**: iPhone 17 Pro portrait + landscape and iPad Pro 13" portrait, all on iOS 26.4, defined in `SnapshotDevices.swift`. Snapshots are simulator-specific, so pinning the configs (size, safe area, trait collection) avoids false-positive diffs when the recorder runs on a different sim. This same matrix is what catches iPad and landscape regressions for free — if the layout breaks on one, the diff makes it obvious.
+
+### App target — integration + end-to-end UI tests
+
+The App target is where the layers compose, so its tests check that the wiring works rather than re-testing logic that's already covered below.
+
+- **`GameStoreTests`** (Swift Testing, `@MainActor`) — integration tests for `GameStore` against fake services. The reducer is already proven pure in `QueensCore`; what these tests prove is that the store fires the right side effects in the right order:
+  - `SpyHapticsService` and `SpySoundService` record every event, so we can assert sequences like `[.placeQueen, .conflict]` after a tap that creates a conflict, or `[.placeQueen, .win]` on the move that solves the board.
+  - `InMemoryBestScoresRepository` (with optional seeded prior bests) verifies that wins persist scores and that `isNewBestTime` / `isNewBestMoves` are computed against the *prior* values, not the new ones.
+  - `FakeClock` exposes a manual `tick(_ dt:)` and an `activeSubscribers` count, which lets the timer tests assert both that ticks advance `elapsed` and that `stopTimer()` actually cancels the subscription — without waiting on real time.
+- **`QueensPuzzleUITests`** (XCTest + `XCUIApplication`) — end-to-end golden path against a real simulator build:
+  - The app launches with `-uitesting-in-memory-scores`, swapping the persistent best-scores repository for an in-memory one. This keeps UI runs hermetic — no leaked state between runs, and "new best time" assertions are deterministic on a fresh launch.
+  - The solve-a-4x4 test taps cells by their algebraic-notation accessibility identifiers (`b4`, `d3`, `a2`, `c1`). Reusing chess notation as the identifier means UI tests and VoiceOver labels stay in sync — if one breaks, both do.
+  - Beyond the win itself, the test asserts the win overlay copy ("You won!", "New best time and move count!"), the presence of `Retry` and `Leave` buttons, and that `Leave` returns the user to the home screen. That's the smallest path that touches every layer (UI → store → reducer → rules → repository → back to UI), which is exactly what an E2E test should do.
