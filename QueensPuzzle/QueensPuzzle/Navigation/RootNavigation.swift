@@ -4,8 +4,7 @@ import QueensUI
 
 struct RootNavigation: View {
     @State private var path = NavigationPath()
-    @State private var scoresVersion: Int = 0
-    private let scores: BestScoresRepository
+    @State private var scores: ScoresStore
     private let clock: Clock
     private let haptics: HapticsService
     private let sound: SoundService
@@ -16,7 +15,7 @@ struct RootNavigation: View {
         haptics: HapticsService = SystemHapticsService(),
         sound: SoundService = SystemSoundService()
     ) {
-        self.scores = scores
+        self._scores = State(initialValue: ScoresStore(repository: scores))
         self.clock = clock
         self.haptics = haptics
         self.sound = sound
@@ -29,7 +28,6 @@ struct RootNavigation: View {
                 bestMoves: { scores.bestMoves(for: $0) },
                 onStartGame: { path.append($0) }
             )
-            .id(scoresVersion)
             .navigationDestination(for: BoardSize.self) { size in
                 GameScreen(
                     size: size,
@@ -37,54 +35,10 @@ struct RootNavigation: View {
                     clock: clock,
                     haptics: haptics,
                     sound: sound,
-                    onLeave: {
-                        scoresVersion &+= 1
-                        path.removeLast()
-                    }
+                    onLeave: { path.removeLast() }
                 )
                 .toolbar(.hidden, for: .navigationBar)
             }
         }
-    }
-}
-
-/// Owns a `GameStore` scoped to the lifetime of a single game session, and
-/// bridges its observable state into `GameView`.
-private struct GameScreen: View {
-    @State private var store: GameStore
-    private let onLeave: () -> Void
-
-    init(
-        size: BoardSize,
-        scores: BestScoresRepository,
-        clock: Clock,
-        haptics: HapticsService,
-        sound: SoundService,
-        onLeave: @escaping () -> Void
-    ) {
-        self._store = State(initialValue: GameStore(
-            size: size,
-            clock: clock,
-            haptics: haptics,
-            sound: sound,
-            scores: scores
-        ))
-        self.onLeave = onLeave
-    }
-
-    var body: some View {
-        GameView(
-            state: store.state,
-            isNewBestTime: store.isNewBestTime,
-            isNewBestMoves: store.isNewBestMoves,
-            onTap: { store.tap($0) },
-            onReset: { store.resetBoard() },
-            onAbort: {
-                store.stopTimer()
-                onLeave()
-            },
-            onRetry: { store.retry() },
-            onLeave: onLeave
-        )
     }
 }
