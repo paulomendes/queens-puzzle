@@ -1,9 +1,9 @@
-import SwiftUI
 import QueensCore
 import QueensUI
+import SwiftUI
 
 struct RootNavigation: View {
-    @State private var path = NavigationPath()
+    @State private var path: [AppDestination] = []
     @State private var scores: ScoresStore
     private let clock: Clock
     private let haptics: HapticsService
@@ -26,18 +26,21 @@ struct RootNavigation: View {
             HomeView(
                 bestTime: { scores.bestTime(for: $0) },
                 bestMoves: { scores.bestMoves(for: $0) },
-                onStartGame: { path.append($0) }
+                onStartGame: { path.append(.game($0)) }
             )
-            .navigationDestination(for: BoardSize.self) { size in
-                GameScreen(
-                    size: size,
-                    scores: scores,
-                    clock: clock,
-                    haptics: haptics,
-                    sound: sound,
-                    onLeave: { path.removeLast() }
-                )
-                .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(for: AppDestination.self) { destination in
+                switch destination {
+                case .game(let size):
+                    GameScreen(
+                        size: size,
+                        scores: scores,
+                        clock: clock,
+                        haptics: haptics,
+                        sound: sound,
+                        onLeave: { path.removeLast() }
+                    )
+                    .toolbar(.hidden, for: .navigationBar)
+                }
             }
         }
     }

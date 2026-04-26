@@ -13,15 +13,15 @@ final class UserDefaultsBestScoreRepository: BestScoresRepository, @unchecked Se
         self.userDefaults = userDefaults
     }
 
-    func bestTime(for size: QueensCore.BoardSize) -> TimeInterval? {
+    func bestTime(for size: BoardSize) -> TimeInterval? {
         userDefaults.object(forKey: String(format: Constants.bestTimeKey, "\(size)")) as? TimeInterval
     }
     
-    func bestMoves(for size: QueensCore.BoardSize) -> Int? {
+    func bestMoves(for size: BoardSize) -> Int? {
         userDefaults.object(forKey: String(format: Constants.bestMovesKey, "\(size)")) as? Int
     }
     
-    func record(time: TimeInterval, moves: Int, size: QueensCore.BoardSize) {
+    func record(time: TimeInterval, moves: Int, size: BoardSize) {
         if let existingTime = bestTime(for: size) {
             userDefaults.set(min(time, existingTime), forKey: String(format: Constants.bestTimeKey, "\(size)"))
         } else {
