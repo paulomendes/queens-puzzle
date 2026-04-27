@@ -2,6 +2,16 @@
 
 An iOS SwiftUI implementation of the N-Queens puzzle. Pick a board size (4–10), tap to place queens, and try to fill the board so that no two queens attack each other.
 
+## Demo
+
+<p align="center">
+  <video src="docs/preview.mp4" controls muted playsinline width="320" poster="docs/preview-poster.png">
+    <a href="docs/preview.mp4"><img src="docs/preview-poster.png" alt="Queens Puzzle demo" width="320"></a>
+  </video>
+</p>
+
+> If the inline player doesn't load, [watch the demo here](docs/preview.mp4).
+
 ## Build
 
 The Xcode project lives in `QueensPuzzle/`. Open and build from there:
