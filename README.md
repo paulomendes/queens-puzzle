@@ -47,6 +47,17 @@ xcodebuild -project QueensPuzzle.xcodeproj -scheme QueensPuzzle \
 
 Or `⌘U` in Xcode.
 
+> **IMPORTANT — snapshot tests are simulator-pinned**
+>
+> The `QueensUI` snapshot suite is recorded against **iPhone 17 Pro on iOS 24.6 in Light Mode**. Snapshot images are pixel-exact and depend on the simulator's screen size, scale, font metrics, and rendering pipeline, so running them on any other device, iOS version, or in Dark Mode will produce false-positive diffs.
+>
+> Before running the suite locally:
+>
+> - Use the `iPhone 17 Pro` simulator on **iOS 24.6** specifically — not the latest available runtime.
+> - Set the simulator appearance to **Light** (Features → Toggle Appearance, or `xcrun simctl ui booted appearance light`).
+>
+> If you need to re-record snapshots, do it on this same configuration and commit the updated reference images.
+
 ---
 
 ## Architecture
